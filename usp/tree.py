@@ -20,6 +20,7 @@ from .objects.sitemap import (
 if TYPE_CHECKING:
     from .web_client.abstract_client import AbstractWebClient
 
+# Paths which are not exposed in robots.txt but might still contain a sitemap.
 _UNPUBLISHED_SITEMAP_PATHS: set[str] = {
     "sitemap.xml",
     "sitemap.xml.gz",
@@ -36,7 +37,6 @@ _UNPUBLISHED_SITEMAP_PATHS: set[str] = {
     "sitemap_news.xml.gz",
     "sitemap-news.xml.gz",
 }
-"""Paths which are not exposed in robots.txt but might still contain a sitemap."""
 
 
 def sitemap_tree_for_homepage(

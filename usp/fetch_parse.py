@@ -128,7 +128,7 @@ class SitemapFetcher:
 
         response_content: str = ungzipped_response_content(
             url=self._url,
-            response=response,
+            response=response,  # type: ignore  # noqa: PGH003
         )
 
         # MIME types returned in Content-Type are unpredictable, so peek into the content instead # noqa: E501
@@ -141,7 +141,7 @@ class SitemapFetcher:
                 web_client=self._web_client,
             )
 
-        else:
+        else:  # noqa: PLR5501
             # Assume that it's some sort of a text file (robots.txt or plain text sitemap) # noqa: E501
             if self._url.endswith("/robots.txt"):
                 parser = IndexRobotsTxtSitemapParser(
@@ -371,7 +371,7 @@ class XMLSitemapParser(AbstractSitemapParser):
         try:
             is_final = True
             parser.Parse(self._content, is_final)
-        except Exception as ex:
+        except Exception as ex:  # noqa: BLE001
             # Some sitemap XML files might end abruptly because web servers might be
             # timing out on returning huge XML files so don't return InvalidSitemap()
             # but try to get as much pages as possible
@@ -410,7 +410,7 @@ class XMLSitemapParser(AbstractSitemapParser):
             namespace_url: str = ""
             name = name_parts[0]
 
-        elif len(name_parts) == 2:
+        elif len(name_parts) == 2:  # noqa: PLR2004
             namespace_url = name_parts[0]
             name = name_parts[1]
 
@@ -510,6 +510,13 @@ class AbstractXMLSitemapParser(metaclass=abc.ABCMeta):
         name: str,  # noqa: ARG002
         attrs: dict[str, str],  # noqa: ARG002
     ) -> None:
+        """Handler for XML element start.
+
+        Args:
+            self: Abstract XML sitemap parser.
+            name: XML element name.
+            attrs: XML element attributes.
+        """
         self._last_handler_call_was_xml_char_data = False
 
     def xml_element_end(self: AbstractXMLSitemapParser, name: str) -> None:  # noqa: ARG002
@@ -624,8 +631,8 @@ class IndexXMLSitemapParser(AbstractXMLSitemapParser):
                     recursion_level=self._recursion_level + 1,
                     web_client=self._web_client,
                 )
-                fetched_sitemap = fetcher.sitemap()
-            except Exception as ex:
+                fetched_sitemap: AbstractSitemap = fetcher.sitemap()
+            except Exception as ex:  # noqa: BLE001
                 fetched_sitemap = InvalidSitemap(
                     url=sub_sitemap_url,
                     reason=f"Unable to add sub-sitemap from URL {sub_sitemap_url}: {ex!s}",  # noqa: E501
@@ -686,7 +693,7 @@ class PagesXMLSitemapParser(AbstractXMLSitemapParser):
                 (self.url),
             )
 
-        def page(self: PagesXMLSitemapParser.Page) -> SitemapPage | None:
+        def page(self: PagesXMLSitemapParser.Page) -> SitemapPage | None:  # noqa: C901, PLR0912, PLR0915
             """Return constructed sitemap page if one has been completed, otherwise None."""  # noqa: E501
             # Required
             url: str | None = html_unescape_strip(self.url)
@@ -840,7 +847,7 @@ class PagesXMLSitemapParser(AbstractXMLSitemapParser):
             msg: str = f"Character data is expected to be set at the end of <{name}>."
             raise SitemapXMLParsingExceptionError(msg)
 
-    def xml_element_end(self: PagesXMLSitemapParser, name: str) -> None:
+    def xml_element_end(self: PagesXMLSitemapParser, name: str) -> None:  # noqa: C901, PLR0912
         """Handler for XML element end.
 
         Args:
@@ -859,7 +866,7 @@ class PagesXMLSitemapParser(AbstractXMLSitemapParser):
                 self._pages.append(self._current_page)
             self._current_page = None
 
-        else:
+        else:  # noqa: PLR5501
             if name == "sitemap:loc":
                 # Every entry must have <loc>
                 self.__require_last_char_data_to_be_set(name=name)
@@ -1062,7 +1069,7 @@ class PagesRSSSitemapParser(AbstractXMLSitemapParser):
                     self._pages.append(self._current_page)
                 self._current_page = None
 
-            else:
+            else:  # noqa: PLR5501
                 if name == "link":
                     # Every entry must have <link>
                     self.__require_last_char_data_to_be_set(name=name)
@@ -1108,7 +1115,7 @@ class PagesAtomSitemapParser(AbstractXMLSitemapParser):
     http://rakaz.nl/2005/07/moving-from-atom-03-to-10.html
     """
 
-    # FIXME: merge with RSS parser class as there are too many similarities
+    # TODO: merge with RSS parser class as there are too many similarities
 
     class Page:
         """Data class for holding various properties for a single Atom <entry> while parsing."""  # noqa: E501
@@ -1246,7 +1253,7 @@ class PagesAtomSitemapParser(AbstractXMLSitemapParser):
 
                 self._current_page = None
 
-            else:
+            else:  # noqa: PLR5501
                 if name == "title":
                     # Title (if set) can't be empty
                     self.__require_last_char_data_to_be_set(name=name)

@@ -21,8 +21,10 @@ pytest = "^7.4.3"
 pre-commit = "^3.5.0"
 
 [build-system]
-requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
+requires = [
+  "poetry-core",
+]
 
 [tool.ruff]
 fix = true

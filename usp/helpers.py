@@ -198,8 +198,9 @@ def gunzip(data: bytes) -> bytes:
 
     try:
         gunzipped_data = gzip_lib.decompress(data)
-    except Exception as ex:
-        raise GunzipExceptionError("Unable to gunzip data: %s" % str(ex))
+    except Exception as ex:  # noqa: BLE001
+        msg: str = f"Unable to gunzip data: {ex}"
+        raise GunzipExceptionError(msg) from ex
 
     if gunzipped_data is None:
         msg = "Gunzipped data is None."

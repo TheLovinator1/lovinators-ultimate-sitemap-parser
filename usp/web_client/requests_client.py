@@ -175,21 +175,14 @@ class RequestsWebClient(AbstractWebClient):
             return RequestsWebClientErrorResponse(message=str(ex), retryable=False)
 
         else:
-            if 200 <= response.status_code < 300:
+            if 200 <= response.status_code < 300:  # noqa: PLR2004
                 return RequestsWebClientSuccessResponse(
                     requests_response=response,
                     max_response_data_length=self.__max_response_data_length,
                 )
-            else:
-                message: str = f"{response.status_code} {response.reason}"
 
-                if response.status_code in RETRYABLE_HTTP_STATUS_CODES:
-                    return RequestsWebClientErrorResponse(
-                        message=message,
-                        retryable=True,
-                    )
-                else:
-                    return RequestsWebClientErrorResponse(
-                        message=message,
-                        retryable=False,
-                    )
+            message: str = f"{response.status_code} {response.reason}"
+            if response.status_code in RETRYABLE_HTTP_STATUS_CODES:
+                return RequestsWebClientErrorResponse(message=message, retryable=True)
+
+            return RequestsWebClientErrorResponse(message=message, retryable=False)

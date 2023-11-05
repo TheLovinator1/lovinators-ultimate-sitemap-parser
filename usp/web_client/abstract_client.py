@@ -4,8 +4,9 @@ from __future__ import annotations
 import abc
 from http import HTTPStatus
 
+# HTTP status codes on which a request should be retried.
 RETRYABLE_HTTP_STATUS_CODES: set[int] = {
-    # Some servers return "400 Bad Request" initially but upon retry start working again, no idea why
+    # Some servers return "400 Bad Request" initially but upon retry start working again, no idea why # noqa: E501
     int(HTTPStatus.BAD_REQUEST),
     # If we timed out requesting stuff, we can just try again
     int(HTTPStatus.REQUEST_TIMEOUT),
@@ -44,10 +45,9 @@ RETRYABLE_HTTP_STATUS_CODES: set[int] = {
     # (unofficial, Cloudflare) 530 Origin DNS Error
     530,
 }
-"""HTTP status codes on which a request should be retried."""
 
 
-class AbstractWebClientResponse(metaclass=abc.ABCMeta):
+class AbstractWebClientResponse(metaclass=abc.ABCMeta):  # noqa: B024
     """Abstract response."""
 
 

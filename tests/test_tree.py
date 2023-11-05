@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import datetime
 import difflib
+import gzip as gzip_lib
 import textwrap
 from decimal import Decimal
 from email.utils import format_datetime
@@ -11,7 +12,6 @@ from unittest import TestCase
 import requests_mock
 from dateutil.tz import tzoffset
 
-from tests.helpers import gzip
 from usp.objects.page import (
     SitemapNewsStory,
     SitemapPage,
@@ -39,6 +39,35 @@ if TYPE_CHECKING:
 # TODO: XML vulnerabilities with Expat
 # TODO: max. recursion level
 # TODO: tests responses that are too big
+
+
+def gzip(data: str | bytes) -> bytes:
+    """Gzip data."""
+    if data is None:
+        msg = "Data is None."
+        raise Exception(msg)  # noqa: TRY002 # sourcery skip: raise-specific-error
+
+    if isinstance(data, str):
+        data = data.encode("utf-8")
+
+    if not isinstance(data, bytes):
+        msg = "Data is not bytes."
+        raise TypeError(msg)
+
+    try:
+        gzipped_data: bytes = gzip_lib.compress(data, compresslevel=9)
+    except Exception as ex:  # noqa: BLE001
+        raise Exception("Unable to gzip data: %s" % str(ex)) from ex  # noqa: TRY002
+
+    if gzipped_data is None:
+        msg = "Gzipped data is None."
+        raise TypeError(msg)
+
+    if not isinstance(gzipped_data, bytes):
+        msg = "Gzipped data is not bytes."
+        raise TypeError(msg)
+
+    return gzipped_data
 
 
 class TestSitemapTree(TestCase):
@@ -97,7 +126,7 @@ class TestSitemapTree(TestCase):
                     Sitemap: {self.TEST_BASE_URL}/sitemap_pages.xml
 
                     # Intentionally spelled as "Site-map" as Google tolerates this:
-                    # https://github.com/google/robotstxt/blob/master/robots.cc#L703
+                    # https://github.com/google/robotstxt/blob/455b1583103d13ad88fe526bc058d6b9f3309215/robots.cc#L699C48-L699C48
                     Site-map: {self.TEST_BASE_URL}/sitemap_news_index_1.xml
                 """,
                 ).strip(),

@@ -1,7 +1,6 @@
 import datetime
 
 import pytest
-from dateutil.tz import tzutc
 
 from usp.exceptions import (
     GunzipExceptionError,
