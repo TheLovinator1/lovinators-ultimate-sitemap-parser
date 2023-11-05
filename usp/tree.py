@@ -4,12 +4,13 @@
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
+from urllib.parse import ParseResult, urljoin, urlparse
 
 from loguru import logger as log
 
 from .exceptions import SitemapExceptionError
 from .fetch_parse import SitemapFetcher
-from .helpers import is_http_url, strip_url_to_homepage
+from .helpers import is_http_url
 from .objects.sitemap import (
     AbstractSitemap,
     IndexRobotsTxtSitemap,
@@ -59,16 +60,15 @@ def sitemap_tree_for_homepage(
         msg: str = f"URL {homepage_url} is not a HTTP(s) URL."
         raise SitemapExceptionError(msg)
 
-    stripped_homepage_url: str = strip_url_to_homepage(url=homepage_url)
+    parse_result: ParseResult = urlparse(homepage_url)
+    stripped_homepage_url: str = parse_result.scheme + "://" + parse_result.netloc + "/"
     if homepage_url != stripped_homepage_url:
         log.warning(
             f"Assuming that the homepage of {homepage_url} is {stripped_homepage_url}",
         )
         homepage_url = stripped_homepage_url
 
-    if not homepage_url.endswith("/"):
-        homepage_url += "/"
-    robots_txt_url: str = homepage_url + "robots.txt"
+    robots_txt_url: str = urljoin(homepage_url, "robots.txt")
 
     sitemaps = []
 

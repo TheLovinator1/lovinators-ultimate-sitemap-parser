@@ -16,7 +16,6 @@ from loguru import logger as log
 from .exceptions import (
     GunzipExceptionError,
     SitemapExceptionError,
-    StripURLToHomepageExceptionError,
 )
 from .web_client.abstract_client import (
     AbstractWebClient,
@@ -241,39 +240,3 @@ def ungzipped_response_content(
         log.error(msg)
 
     return data
-
-
-def strip_url_to_homepage(url: str) -> str:
-    """Strip URL to its homepage.
-
-    :param url: URL to strip, e.g. "http://www.example.com/page.html".
-    :return: Stripped homepage URL, e.g. "http://www.example.com/"
-    """
-    if not url:
-        msg = "URL is empty."
-        raise StripURLToHomepageExceptionError(msg)
-
-    try:
-        uri = urlparse(url)
-        if not uri.scheme:
-            msg = f"Scheme is undefined for URL {url}"
-            raise StripURLToHomepageExceptionError(msg)  # noqa: TRY301
-
-        if uri.scheme.lower() not in {"http", "https"}:
-            msg: str = f"Scheme is not HTTP(s) for URL {url}"
-            raise ValueError(msg)  # noqa: TRY301
-
-        uri: tuple[str, str, str, str, str, str] = (
-            uri.scheme,
-            uri.netloc,
-            "/",  # path
-            "",  # params
-            "",  # query
-            "",  # fragment
-        )
-        url = urlunparse(uri)
-    except Exception as ex:  # noqa: BLE001
-        msg = f"Unable to parse URL {url}: {ex}"
-        raise StripURLToHomepageExceptionError(msg) from ex
-
-    return url

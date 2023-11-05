@@ -13,7 +13,3 @@ class SitemapXMLParsingExceptionError(Exception):
 
 class GunzipExceptionError(Exception):
     """gunzip() exception."""
-
-
-class StripURLToHomepageExceptionError(Exception):
-    """strip_url_to_homepage() exception."""

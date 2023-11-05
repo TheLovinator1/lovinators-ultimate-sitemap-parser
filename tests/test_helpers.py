@@ -5,7 +5,6 @@ import pytest
 from usp.exceptions import (
     GunzipExceptionError,
     SitemapExceptionError,
-    StripURLToHomepageExceptionError,
 )
 from usp.helpers import (
     gunzip,
@@ -13,7 +12,6 @@ from usp.helpers import (
     is_http_url,
     parse_iso8601_date,
     parse_rfc2822_date,
-    strip_url_to_homepage,
 )
 
 
@@ -110,47 +108,6 @@ def test_is_http_url() -> None:
     assert is_http_url("http://www.šiaurė.lt/šiaurė.html")
     assert is_http_url("http://www.xn--iaur-yva35b.lt/šiaurė.html")
     assert is_http_url("http://.xn--iaur-yva35b.lt") is False  # Invalid Punycode
-
-
-def test_strip_url_to_homepage() -> None:
-    """Test strip_url_to_homepage() function."""
-    assert (
-        strip_url_to_homepage("http://www.cwi.nl:80/%7Eguido/Python.html")
-        == "http://www.cwi.nl:80/"
-    )
-
-    # HTTP auth
-    assert (
-        strip_url_to_homepage(
-            "http://username:password@www.cwi.nl/page.html",
-        )
-        == "http://username:password@www.cwi.nl/"
-    )
-
-    # UTF-8 in paths
-    assert (
-        strip_url_to_homepage("http://www.example.com/šiaurė.html")
-        == "http://www.example.com/"
-    )
-
-    # IDN
-    assert (
-        strip_url_to_homepage("https://www.šiaurė.lt/šiaurė.html")
-        == "https://www.šiaurė.lt/"
-    )
-    assert (
-        strip_url_to_homepage("http://www.xn--iaur-yva35b.lt/šiaurė.html")
-        == "http://www.xn--iaur-yva35b.lt/"
-    )
-
-    with pytest.raises(StripURLToHomepageExceptionError):
-        strip_url_to_homepage(None)  # type: ignore  # noqa: PGH003
-
-    with pytest.raises(StripURLToHomepageExceptionError):
-        strip_url_to_homepage("")
-
-    with pytest.raises(StripURLToHomepageExceptionError):
-        strip_url_to_homepage("not an URL")
 
 
 def test_gunzip() -> None:
