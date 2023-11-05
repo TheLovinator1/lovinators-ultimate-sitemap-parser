@@ -1,29 +1,19 @@
 """Exceptions used by the sitemap parser."""
 
-
-class SitemapException(Exception):
-    """
-    Problem due to which we can't run further, e.g. wrong input parameters.
-    """
-    pass
+from __future__ import annotations
 
 
-class SitemapXMLParsingException(Exception):
-    """
-    XML parsing exception to be handled gracefully.
-    """
-    pass
+class SitemapExceptionError(Exception):
+    """Problem due to which we can't run further, e.g. wrong input parameters."""
 
 
-class GunzipException(Exception):
-    """
-    gunzip() exception.
-    """
-    pass
+class SitemapXMLParsingExceptionError(Exception):
+    """XML parsing exception to be handled gracefully."""
 
 
-class StripURLToHomepageException(Exception):
-    """
-    strip_url_to_homepage() exception.
-    """
-    pass
+class GunzipExceptionError(Exception):
+    """gunzip() exception."""
+
+
+class StripURLToHomepageExceptionError(Exception):
+    """strip_url_to_homepage() exception."""

@@ -1,29 +1,32 @@
+from __future__ import annotations
+
 import gzip as gzip_lib
 
-from typing import Union
 
-
-def gzip(data: Union[str, bytes]) -> bytes:
+def gzip(data: str | bytes) -> bytes:
     """Gzip data."""
-
     if data is None:
-        raise Exception("Data is None.")
+        msg = "Data is None."
+        raise Exception(msg)  # noqa: TRY002 # sourcery skip: raise-specific-error
 
     if isinstance(data, str):
-        data = data.encode('utf-8')
+        data = data.encode("utf-8")
 
     if not isinstance(data, bytes):
-        raise Exception("Data is not str or bytes: %s" % str(data))
+        msg = "Data is not bytes."
+        raise TypeError(msg)
 
     try:
-        gzipped_data = gzip_lib.compress(data, compresslevel=9)
-    except Exception as ex:
-        raise Exception("Unable to gzip data: %s" % str(ex))
+        gzipped_data: bytes = gzip_lib.compress(data, compresslevel=9)
+    except Exception as ex:  # noqa: BLE001
+        raise Exception("Unable to gzip data: %s" % str(ex)) from ex  # noqa: TRY002
 
     if gzipped_data is None:
-        raise Exception("Gzipped data is None.")
+        msg = "Gzipped data is None."
+        raise TypeError(msg)
 
     if not isinstance(gzipped_data, bytes):
-        raise Exception("Gzipped data is not bytes.")
+        msg = "Gzipped data is not bytes."
+        raise TypeError(msg)
 
     return gzipped_data
