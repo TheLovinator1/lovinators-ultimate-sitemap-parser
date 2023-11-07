@@ -85,7 +85,7 @@ class AbstractSitemap(metaclass=abc.ABCMeta):
 
         Yields:
             Iterator which yields all pages of this sitemap and linked sitemaps (if any).
-        """  # noqa: E501
+        """
         msg = "Abstract method"
         raise NotImplementedError(msg)
 
@@ -161,7 +161,7 @@ class InvalidSitemap(AbstractSitemap):  # noqa: PLW1641
 
         Yields:
             Iterator which yields all pages of this sitemap and linked sitemaps (if any).
-        """  # noqa: E501
+        """
         yield from []
 
 
@@ -249,7 +249,7 @@ class AbstractPagesSitemap(AbstractSitemap, metaclass=abc.ABCMeta):  # noqa: PLW
 
         Yields:
             Iterator which yields all pages of this sitemap and linked sitemaps (if any).
-        """  # noqa: E501
+        """
         yield from self.pages
 
 
@@ -321,12 +321,7 @@ class AbstractIndexSitemap(AbstractSitemap):  # noqa: PLW1641
         Returns:
             String representation of the index sitemap.
         """
-        return (
-            f"{self.__class__.__name__}("
-            f"url={self.url}, "
-            f"sub_sitemaps={self.sub_sitemaps}"
-            ")"
-        )
+        return f"{self.__class__.__name__}(" f"url={self.url}, " f"sub_sitemaps={self.sub_sitemaps}" ")"
 
     @property
     def sub_sitemaps(self: AbstractIndexSitemap) -> list[AbstractSitemap]:
@@ -340,7 +335,7 @@ class AbstractIndexSitemap(AbstractSitemap):  # noqa: PLW1641
         """Return iterator which yields all pages of this sitemap and linked sitemaps (if any).
 
         :return: Iterator which yields all pages of this sitemap and linked sitemaps (if any).
-        """  # noqa: E501
+        """
         for sub_sitemap in self.sub_sitemaps:
             yield from sub_sitemap.all_pages()
 

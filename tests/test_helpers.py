@@ -22,7 +22,7 @@ def test_html_unescape_strip() -> None:
 
 
 def test_parse_iso8601_date() -> None:
-    """Test parsing ISO 8601 date (e.g. from Atom's <updated>) into datetime.datetime object."""  # noqa: E501
+    """Test parsing ISO 8601 date (e.g. from Atom's <updated>) into datetime.datetime object."""
     # TODO: Readd all the deleted tests
 
     with pytest.raises(SitemapExceptionError):
@@ -41,7 +41,7 @@ def test_parse_iso8601_date() -> None:
 
 
 def test_parse_rfc2822_date() -> None:
-    """Test parsing RFC 2822 date (e.g. from Atom's <issued>) into datetime.datetime object."""  # noqa: E501
+    """Test parsing RFC 2822 date (e.g. from Atom's <issued>) into datetime.datetime object."""
     assert parse_rfc2822_date("Tue, 10 Aug 2010 20:43:53 -0000") == datetime.datetime(
         year=2010,
         month=8,

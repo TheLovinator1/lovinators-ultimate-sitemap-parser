@@ -101,7 +101,7 @@ class RequestsWebClient(AbstractWebClient):
     __USER_AGENT = "lovinators_ultimate_sitemap_parser/0.1.0"
 
     # HTTP request timeout.
-    # Some web servers might be generating huge sitemaps on the fly, so this is why it's rather big. # noqa: E501
+    # Some web servers might be generating huge sitemaps on the fly, so this is why it's rather big.
     __HTTP_REQUEST_TIMEOUT = 60
 
     __slots__: list[str] = [

@@ -28,10 +28,7 @@ if TYPE_CHECKING:
     import datetime
 
 # Regular expression to match HTTP(s) URLs.
-__URL_REGEX: re.Pattern[str] = re.compile(
-    r"^https?://[^\s/$.?#].[^\s]*$",
-    re.IGNORECASE,
-)
+__URL_REGEX: re.Pattern[str] = re.compile(r"^https?://[^\s/$.?#].[^\s]*$", re.IGNORECASE)
 
 
 def is_http_url(url: str | None) -> bool:  # noqa: PLR0911
@@ -191,9 +188,7 @@ def gunzip(data: bytes) -> bytes:
 
     if len(data) == 0:
         msg = "Data is empty (no way an empty string is a valid Gzip archive)."
-        raise GunzipExceptionError(
-            msg,
-        )
+        raise GunzipExceptionError(msg)
 
     try:
         gunzipped_data = gzip_lib.decompress(data)
@@ -229,7 +224,7 @@ def ungzipped_response_content(
             data = gunzip(data)
         except GunzipExceptionError as ex:
             # In case of an error, just assume that it's one of the non-gzipped sitemaps with ".gz" extension # noqa: E501
-            msg: str = f"Unable to gunzip response {response}, maybe it's a non-gzipped sitemap: {ex}"  # noqa: E501
+            msg: str = f"Unable to gunzip response {response}, maybe it's a non-gzipped sitemap: {ex}"
             log.error(msg)
 
     # TODO: other encodings

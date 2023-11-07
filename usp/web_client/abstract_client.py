@@ -6,7 +6,7 @@ from http import HTTPStatus
 
 # HTTP status codes on which a request should be retried.
 RETRYABLE_HTTP_STATUS_CODES: set[int] = {
-    # Some servers return "400 Bad Request" initially but upon retry start working again, no idea why # noqa: E501
+    # Some servers return "400 Bad Request" initially but upon retry start working again, no idea why
     int(HTTPStatus.BAD_REQUEST),
     # If we timed out requesting stuff, we can just try again
     int(HTTPStatus.REQUEST_TIMEOUT),

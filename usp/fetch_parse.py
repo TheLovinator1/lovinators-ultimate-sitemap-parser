@@ -83,9 +83,7 @@ class SitemapFetcher:
             SitemapException: If the recursion level is exceeded.
         """
         if recursion_level > self.__MAX_RECURSION_LEVEL:
-            msg = (
-                f"Recursion level exceeded {self.__MAX_RECURSION_LEVEL} for URL {url}."
-            )
+            msg = f"Recursion level exceeded {self.__MAX_RECURSION_LEVEL} for URL {url}."
             raise SitemapExceptionError(msg)
 
         if not is_http_url(url):
@@ -119,7 +117,7 @@ class SitemapFetcher:
         if isinstance(response, WebClientErrorResponse):
             return InvalidSitemap(
                 url=self._url,
-                reason=f"Unable to fetch sitemap from {self._url}: {response.message()}",  # noqa: E501
+                reason=f"Unable to fetch sitemap from {self._url}: {response.message()}",
             )
 
         if isinstance(response, AbstractWebClientSuccessResponse):
@@ -131,7 +129,7 @@ class SitemapFetcher:
             response=response,  # type: ignore  # noqa: PGH003
         )
 
-        # MIME types returned in Content-Type are unpredictable, so peek into the content instead # noqa: E501
+        # MIME types returned in Content-Type are unpredictable, so peek into the content instead
         if response_content[:20].strip().startswith("<"):
             # XML sitemap (the specific kind is to be determined later)
             parser = XMLSitemapParser(
@@ -142,7 +140,7 @@ class SitemapFetcher:
             )
 
         else:  # noqa: PLR5501
-            # Assume that it's some sort of a text file (robots.txt or plain text sitemap) # noqa: E501
+            # Assume that it's some sort of a text file (robots.txt or plain text sitemap)
             if self._url.endswith("/robots.txt"):
                 parser = IndexRobotsTxtSitemapParser(
                     url=self._url,
@@ -252,7 +250,7 @@ class IndexRobotsTxtSitemapParser(AbstractSitemapParser):
         Returns:
             Sitemap object.
         """
-        # Serves as an ordered set because we want to deduplicate URLs but also retain the order # noqa: E501
+        # Serves as an ordered set because we want to deduplicate URLs but also retain the order
         sitemap_urls = OrderedDict()
 
         for robots_txt_line in self._content.splitlines():
@@ -266,9 +264,7 @@ class IndexRobotsTxtSitemapParser(AbstractSitemapParser):
                 if is_http_url(sitemap_url):
                     sitemap_urls[sitemap_url] = True
                 else:
-                    log.warning(
-                        f"Sitemap URL {sitemap_url} doesn't look like an URL, skipping",
-                    )
+                    log.warning(f"Sitemap URL {sitemap_url} doesn't look like an URL, skipping")
 
         sub_sitemaps = []
 
@@ -306,7 +302,7 @@ class PlainTextSitemapParser(AbstractSitemapParser):
                 story_urls[stripped_story_url] = True
             else:
                 log.warning(
-                    f"Story URL {stripped_story_url} doesn't look like an URL, skipping",  # noqa: E501
+                    f"Story URL {stripped_story_url} doesn't look like an URL, skipping",
                 )
 
         pages = []
@@ -361,9 +357,7 @@ class XMLSitemapParser(AbstractSitemapParser):
         Returns:
             Sitemap object.
         """
-        parser: XMLParserType = xml.parsers.expat.ParserCreate(
-            namespace_separator=self.__XML_NAMESPACE_SEPARATOR,
-        )
+        parser: XMLParserType = xml.parsers.expat.ParserCreate(namespace_separator=self.__XML_NAMESPACE_SEPARATOR)
         parser.StartElementHandler = self._xml_element_start
         parser.EndElementHandler = self._xml_element_end
         parser.CharacterDataHandler = self._xml_char_data
@@ -403,7 +397,7 @@ class XMLSitemapParser(AbstractSitemapParser):
 
         Returns:
             Normalized element name, e.g. "sitemap:loc" or "news:publication".
-        """  # noqa: E501
+        """
         name_parts: list[str] = name.split(cls.__XML_NAMESPACE_SEPARATOR)
 
         if len(name_parts) == 1:
@@ -423,7 +417,7 @@ class XMLSitemapParser(AbstractSitemapParser):
         elif "/sitemap-news/" in namespace_url:
             name = f"news:{name}"
         else:
-            # We don't care about the rest of the namespaces, so just keep the plain element name # noqa: E501
+            # We don't care about the rest of the namespaces, so just keep the plain element name
             pass
 
         return name
@@ -441,9 +435,7 @@ class XMLSitemapParser(AbstractSitemapParser):
         else:  # noqa: PLR5501
             # Root element -- initialize concrete parser
             if name == "sitemap:urlset":
-                self._concrete_parser = PagesXMLSitemapParser(
-                    url=self._url,
-                )
+                self._concrete_parser = PagesXMLSitemapParser(url=self._url)
 
             elif name == "sitemap:sitemapindex":
                 self._concrete_parser = IndexXMLSitemapParser(
@@ -453,14 +445,10 @@ class XMLSitemapParser(AbstractSitemapParser):
                 )
 
             elif name == "rss":
-                self._concrete_parser = PagesRSSSitemapParser(
-                    url=self._url,
-                )
+                self._concrete_parser = PagesRSSSitemapParser(url=self._url)
 
             elif name == "feed":
-                self._concrete_parser = PagesAtomSitemapParser(
-                    url=self._url,
-                )
+                self._concrete_parser = PagesAtomSitemapParser(url=self._url)
 
             else:
                 msg: str = f"Unsupported root element '{name}'."
@@ -603,9 +591,7 @@ class IndexXMLSitemapParser(AbstractXMLSitemapParser):
         if name == "sitemap:loc":
             sub_sitemap_url: str | None = html_unescape_strip(self._last_char_data)
             if not is_http_url(sub_sitemap_url):
-                log.warning(
-                    f"Sub-sitemap URL does not look like one: {sub_sitemap_url}",
-                )
+                log.warning(f"Sub-sitemap URL does not look like one: {sub_sitemap_url}")
 
             elif sub_sitemap_url not in self._sub_sitemap_urls:
                 self._sub_sitemap_urls.append(sub_sitemap_url)  # type: ignore # noqa: PGH003
@@ -635,7 +621,7 @@ class IndexXMLSitemapParser(AbstractXMLSitemapParser):
             except Exception as ex:  # noqa: BLE001
                 fetched_sitemap = InvalidSitemap(
                     url=sub_sitemap_url,
-                    reason=f"Unable to add sub-sitemap from URL {sub_sitemap_url}: {ex!s}",  # noqa: E501
+                    reason=f"Unable to add sub-sitemap from URL {sub_sitemap_url}: {ex!s}",
                 )
 
             sub_sitemaps.append(fetched_sitemap)
@@ -647,7 +633,7 @@ class PagesXMLSitemapParser(AbstractXMLSitemapParser):
     """Pages XML sitemap parser."""
 
     class Page:
-        """Simple data class for holding various properties for a single <url> entry while parsing."""  # noqa: E501
+        """Simple data class for holding various properties for a single <url> entry while parsing."""
 
         __slots__: list[str] = [
             "url",
@@ -669,7 +655,7 @@ class PagesXMLSitemapParser(AbstractXMLSitemapParser):
 
             Args:
                 self: Simple data class for holding various properties for a single <url> entry while parsing.
-            """  # noqa: E501
+            """
             self.url = None
             self.last_modified = None
             self.change_frequency = None
@@ -689,12 +675,10 @@ class PagesXMLSitemapParser(AbstractXMLSitemapParser):
             Returns:
                 Hash of the object.
             """
-            return hash(
-                (self.url),
-            )
+            return hash((self.url,))
 
-        def page(self: PagesXMLSitemapParser.Page) -> SitemapPage | None:  # noqa: C901, PLR0912, PLR0915
-            """Return constructed sitemap page if one has been completed, otherwise None."""  # noqa: E501
+        def page(self: PagesXMLSitemapParser.Page) -> SitemapPage | None:
+            """Return constructed sitemap page if one has been completed, otherwise None."""
             # Required
             url: str | None = html_unescape_strip(self.url)
             if not url:
@@ -751,22 +735,13 @@ class PagesXMLSitemapParser(AbstractXMLSitemapParser):
             news_access: str | None = html_unescape_strip(self.news_access)
 
             news_genres = html_unescape_strip(self.news_genres)
-            if news_genres:
-                news_genres = [x.strip() for x in news_genres.split(",")]
-            else:
-                news_genres = []
+            news_genres = [x.strip() for x in news_genres.split(",")] if news_genres else []
 
             news_keywords = html_unescape_strip(self.news_keywords)
-            if news_keywords:
-                news_keywords = [x.strip() for x in news_keywords.split(",")]
-            else:
-                news_keywords = []
+            news_keywords = [x.strip() for x in news_keywords.split(",")] if news_keywords else []
 
             news_stock_tickers = html_unescape_strip(self.news_stock_tickers)
-            if news_stock_tickers:
-                news_stock_tickers = [x.strip() for x in news_stock_tickers.split(",")]
-            else:
-                news_stock_tickers = []
+            news_stock_tickers = [x.strip() for x in news_stock_tickers.split(",")] if news_stock_tickers else []
 
             sitemap_news_story = None
             if news_title and news_publish_date:
@@ -938,7 +913,7 @@ class PagesRSSSitemapParser(AbstractXMLSitemapParser):
     """
 
     class Page:
-        """Data class for holding various properties for a single RSS <item> while parsing."""  # noqa: E501
+        """Data class for holding various properties for a single RSS <item> while parsing."""
 
         __slots__: list[str] = [
             "link",
@@ -952,7 +927,7 @@ class PagesRSSSitemapParser(AbstractXMLSitemapParser):
 
             Args:
                 self: Data class for holding various properties for a single RSS <item> while parsing.
-            """  # noqa: E501
+            """
             self.link: str | None = None
             self.title: str | None = None
             self.description: str | None = None
@@ -966,7 +941,7 @@ class PagesRSSSitemapParser(AbstractXMLSitemapParser):
 
             Returns:
                 Hash of the object.
-            """  # noqa: E501
+            """
             return hash(
                 (
                     # Hash only the URL
@@ -975,7 +950,7 @@ class PagesRSSSitemapParser(AbstractXMLSitemapParser):
             )
 
         def page(self: PagesRSSSitemapParser.Page) -> SitemapPage | None:
-            """Return constructed sitemap page if one has been completed, otherwise None."""  # noqa: E501
+            """Return constructed sitemap page if one has been completed, otherwise None."""
             # Required
             link: str | None = html_unescape_strip(self.link)
             if not link:
@@ -1029,7 +1004,7 @@ class PagesRSSSitemapParser(AbstractXMLSitemapParser):
 
         Raises:
             SitemapXMLParsingException: If <item> is encountered while already within <item>.
-        """  # noqa: E501
+        """
         super().xml_element_start(name=name, attrs=attrs)
 
         if name == "item":
@@ -1118,7 +1093,7 @@ class PagesAtomSitemapParser(AbstractXMLSitemapParser):
     # TODO: merge with RSS parser class as there are too many similarities
 
     class Page:
-        """Data class for holding various properties for a single Atom <entry> while parsing."""  # noqa: E501
+        """Data class for holding various properties for a single Atom <entry> while parsing."""
 
         __slots__: list[str] = [
             "link",
@@ -1142,16 +1117,11 @@ class PagesAtomSitemapParser(AbstractXMLSitemapParser):
 
             Returns:
                 Hash of the object.
-            """  # noqa: E501
-            return hash(
-                (
-                    # Hash only the URL
-                    self.link,
-                ),
-            )
+            """
+            return hash((self.link,))
 
         def page(self: PagesAtomSitemapParser.Page) -> SitemapPage | None:
-            """Return constructed sitemap page if one has been completed, otherwise None."""  # noqa: E501
+            """Return constructed sitemap page if one has been completed, otherwise None."""
             # Required
             link: str | None = html_unescape_strip(self.link)
             if not link:
@@ -1208,7 +1178,7 @@ class PagesAtomSitemapParser(AbstractXMLSitemapParser):
 
         Raises:
             SitemapXMLParsingException: If <entry> is encountered while already within <entry>.
-        """  # noqa: E501
+        """
         super().xml_element_start(name=name, attrs=attrs)
 
         if name == "entry":
@@ -1221,8 +1191,7 @@ class PagesAtomSitemapParser(AbstractXMLSitemapParser):
 
         elif name == "link":
             if self._current_page and (
-                attrs.get("rel", "self").lower() == "self"
-                or self._last_link_rel_self_href is None
+                attrs.get("rel", "self").lower() == "self" or self._last_link_rel_self_href is None
             ):
                 self._last_link_rel_self_href: str | None = attrs.get("href")
 

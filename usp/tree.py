@@ -63,9 +63,7 @@ def sitemap_tree_for_homepage(
     parse_result: ParseResult = urlparse(homepage_url)
     stripped_homepage_url: str = parse_result.scheme + "://" + parse_result.netloc + "/"
     if homepage_url != stripped_homepage_url:
-        log.warning(
-            f"Assuming that the homepage of {homepage_url} is {stripped_homepage_url}",
-        )
+        log.warning(f"Assuming that the homepage of {homepage_url} is {stripped_homepage_url}")
         homepage_url = stripped_homepage_url
 
     robots_txt_url: str = urljoin(homepage_url, "robots.txt")

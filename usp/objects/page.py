@@ -49,7 +49,7 @@ class SitemapNewsStory:
             genres: List of properties characterizing the content of the article. Defaults to None.
             keywords: List of keywords describing the topic of the article. Defaults to None.
             stock_tickers: List of up to 5 stock tickers that are the main subject of the article. Defaults to None.
-        """  # noqa: E501
+        """
         # Spec defines that some of the properties below are "required" but in practice
         # not every website provides the required properties. So, we require only
         # "title" and "publish_date" to be set.
@@ -180,7 +180,7 @@ class SitemapNewsStory:
 
         Returns:
             Primary language of the news publication in which the article appears in.
-        """  # noqa: E501
+        """
         return self.__publication_language
 
     @property
@@ -232,7 +232,7 @@ class SitemapNewsStory:
 
         Returns:
             List of up to 5 stock tickers that are the main subject of the article.
-        """  # noqa: E501
+        """
         return self.__stock_tickers
 
 

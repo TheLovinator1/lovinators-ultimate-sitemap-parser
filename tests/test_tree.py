@@ -96,7 +96,7 @@ class TestSitemapTree(TestCase):
 
     @staticmethod
     def fallback_to_404_not_found_matcher(request: Response) -> Response:
-        """Reply with "404 Not Found" to unmatched URLs instead of throwing NoMockAddress."""  # noqa: E501
+        """Reply with "404 Not Found" to unmatched URLs instead of throwing NoMockAddress."""
         return requests_mock.create_response(
             request,
             status_code=404,
@@ -188,14 +188,14 @@ class TestSitemapTree(TestCase):
                 self.TEST_BASE_URL + "/sitemap_news_1.xml",
                 headers={"Content-Type": "application/xml"},
                 text=textwrap.dedent(
-                    """
+                    f"""
                     <?xml version="1.0" encoding="UTF-8"?>
                     <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
                             xmlns:news="http://www.google.com/schemas/sitemap-news/0.9"
                             xmlns:xhtml="http://www.w3.org/1999/xhtml">
 
                         <url>
-                            <loc>{base_url}/news/foo.html</loc>
+                            <loc>{self.TEST_BASE_URL}/news/foo.html</loc>
 
                             <!-- Element present but empty -->
                             <lastmod />
@@ -203,41 +203,36 @@ class TestSitemapTree(TestCase):
                             <!-- Some other XML namespace -->
                             <xhtml:link rel="alternate"
                                         media="only screen and (max-width: 640px)"
-                                        href="{base_url}/news/foo.html?mobile=1" />
+                                        href="{self.TEST_BASE_URL}/news/foo.html?mobile=1" />
 
                             <news:news>
                                 <news:publication>
-                                    <news:name>{publication_name}</news:name>
-                                    <news:language>{publication_language}</news:language>
+                                    <news:name>{self.TEST_PUBLICATION_NAME}</news:name>
+                                    <news:language>{self.TEST_PUBLICATION_LANGUAGE}</news:language>
                                 </news:publication>
-                                <news:publication_date>{publication_date}</news:publication_date>
+                                <news:publication_date>{self.TEST_DATE_STR_ISO8601}</news:publication_date>
                                 <news:title>Foo &lt;foo&gt;</news:title>    <!-- HTML entity decoding -->
                             </news:news>
                         </url>
 
                         <!-- Has a duplicate story in /sitemap_news_2.xml -->
                         <url>
-                            <loc>{base_url}/news/bar.html</loc>
+                            <loc>{self.TEST_BASE_URL}/news/bar.html</loc>
                             <xhtml:link rel="alternate"
                                         media="only screen and (max-width: 640px)"
-                                        href="{base_url}/news/bar.html?mobile=1" />
+                                        href="{self.TEST_BASE_URL}/news/bar.html?mobile=1" />
                             <news:news>
                                 <news:publication>
-                                    <news:name>{publication_name}</news:name>
-                                    <news:language>{publication_language}</news:language>
+                                    <news:name>{self.TEST_PUBLICATION_NAME}</news:name>
+                                    <news:language>{self.TEST_PUBLICATION_LANGUAGE}</news:language>
                                 </news:publication>
-                                <news:publication_date>{publication_date}</news:publication_date>
+                                <news:publication_date>{self.TEST_DATE_STR_ISO8601}</news:publication_date>
                                 <news:title>Bar &amp; bar</news:title>
                             </news:news>
                         </url>
 
                     </urlset>
-                """.format(  # noqa: E501
-                        base_url=self.TEST_BASE_URL,
-                        publication_name=self.TEST_PUBLICATION_NAME,
-                        publication_language=self.TEST_PUBLICATION_LANGUAGE,
-                        publication_date=self.TEST_DATE_STR_ISO8601,
-                    ),
+                """,
                 ).strip(),
             )
 
@@ -272,7 +267,7 @@ class TestSitemapTree(TestCase):
                 self.TEST_BASE_URL + "/sitemap_news_2.xml",
                 headers={"Content-Type": "application/xml"},
                 text=textwrap.dedent(
-                    """
+                    f"""
                     <?xml version="1.0" encoding="UTF-8"?>
                     <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
                             xmlns:news="http://www.google.com/schemas/sitemap-news/0.9"
@@ -281,16 +276,16 @@ class TestSitemapTree(TestCase):
                         <!-- Has a duplicate story in /sitemap_news_1.xml -->
                         <url>
                             <!-- Extra whitespace added around URL -->
-                            <loc>  {base_url}/news/bar.html  </loc>
+                            <loc>  {self.TEST_BASE_URL}/news/bar.html  </loc>
                             <xhtml:link rel="alternate"
                                         media="only screen and (max-width: 640px)"
-                                        href="{base_url}/news/bar.html?mobile=1#fragment_is_to_be_removed" />
+                                        href="{self.TEST_BASE_URL}/news/bar.html?mobile=1#fragment_is_to_be_removed" />
                             <news:news>
                                 <news:publication>
-                                    <news:name>{publication_name}</news:name>
-                                    <news:language>{publication_language}</news:language>
+                                    <news:name>{self.TEST_PUBLICATION_NAME}</news:name>
+                                    <news:language>{self.TEST_PUBLICATION_LANGUAGE}</news:language>
                                 </news:publication>
-                                <news:publication_date>{publication_date}</news:publication_date>
+                                <news:publication_date>{self.TEST_DATE_STR_ISO8601}</news:publication_date>
 
                                 <tag_without_inner_character_data name="value" />
 
@@ -299,27 +294,22 @@ class TestSitemapTree(TestCase):
                         </url>
 
                         <url>
-                            <loc>{base_url}/news/baz.html</loc>
+                            <loc>{self.TEST_BASE_URL}/news/baz.html</loc>
                             <xhtml:link rel="alternate"
                                         media="only screen and (max-width: 640px)"
-                                        href="{base_url}/news/baz.html?mobile=1" />
+                                        href="{self.TEST_BASE_URL}/news/baz.html?mobile=1" />
                             <news:news>
                                 <news:publication>
-                                    <news:name>{publication_name}</news:name>
-                                    <news:language>{publication_language}</news:language>
+                                    <news:name>{self.TEST_PUBLICATION_NAME}</news:name>
+                                    <news:language>{self.TEST_PUBLICATION_LANGUAGE}</news:language>
                                 </news:publication>
-                                <news:publication_date>{publication_date}</news:publication_date>
+                                <news:publication_date>{self.TEST_DATE_STR_ISO8601}</news:publication_date>
                                 <news:title><![CDATA[Bąž]]></news:title>    <!-- CDATA and UTF-8 -->
                             </news:news>
                         </url>
 
                     </urlset>
-                """.format(  # noqa: E501
-                        base_url=self.TEST_BASE_URL,
-                        publication_name=self.TEST_PUBLICATION_NAME,
-                        publication_language=self.TEST_PUBLICATION_LANGUAGE,
-                        publication_date=self.TEST_DATE_STR_ISO8601,
-                    ),
+                """,
                 ).strip(),
             )
 
@@ -366,9 +356,7 @@ class TestSitemapTree(TestCase):
                                         url=f"{self.TEST_BASE_URL}/sitemap_news_1.xml",
                                         pages=[
                                             SitemapPage(
-                                                url="{}/news/foo.html".format(
-                                                    self.TEST_BASE_URL,
-                                                ),
+                                                url=f"{self.TEST_BASE_URL}/news/foo.html",
                                                 news_story=SitemapNewsStory(
                                                     title="Foo <foo>",
                                                     publish_date=self.TEST_DATE_DATETIME,
@@ -377,9 +365,7 @@ class TestSitemapTree(TestCase):
                                                 ),
                                             ),
                                             SitemapPage(
-                                                url="{}/news/bar.html".format(
-                                                    self.TEST_BASE_URL,
-                                                ),
+                                                url=f"{self.TEST_BASE_URL}/news/bar.html",
                                                 news_story=SitemapNewsStory(
                                                     title="Bar & bar",
                                                     publish_date=self.TEST_DATE_DATETIME,
@@ -390,19 +376,13 @@ class TestSitemapTree(TestCase):
                                         ],
                                     ),
                                     IndexXMLSitemap(
-                                        url="{}/sitemap_news_index_2.xml".format(
-                                            self.TEST_BASE_URL,
-                                        ),
+                                        url=f"{self.TEST_BASE_URL}/sitemap_news_index_2.xml",
                                         sub_sitemaps=[
                                             PagesXMLSitemap(
-                                                url="{}/sitemap_news_2.xml".format(
-                                                    self.TEST_BASE_URL,
-                                                ),
+                                                url=f"{self.TEST_BASE_URL}/sitemap_news_2.xml",
                                                 pages=[
                                                     SitemapPage(
-                                                        url="{}/news/bar.html".format(
-                                                            self.TEST_BASE_URL,
-                                                        ),
+                                                        url=f"{self.TEST_BASE_URL}/news/bar.html",
                                                         news_story=SitemapNewsStory(
                                                             title="Bar & bar",
                                                             publish_date=self.TEST_DATE_DATETIME,
@@ -411,9 +391,7 @@ class TestSitemapTree(TestCase):
                                                         ),
                                                     ),
                                                     SitemapPage(
-                                                        url="{}/news/baz.html".format(
-                                                            self.TEST_BASE_URL,
-                                                        ),
+                                                        url=f"{self.TEST_BASE_URL}/news/baz.html",
                                                         news_story=SitemapNewsStory(
                                                             title="Bąž",
                                                             publish_date=self.TEST_DATE_DATETIME,
@@ -424,11 +402,9 @@ class TestSitemapTree(TestCase):
                                                 ],
                                             ),
                                             InvalidSitemap(
-                                                url="{}/sitemap_news_missing.xml".format(
-                                                    self.TEST_BASE_URL,
-                                                ),
+                                                url=f"{self.TEST_BASE_URL}/sitemap_news_missing.xml",
                                                 reason=(
-                                                    "Unable to fetch sitemap from {base_url}/sitemap_news_missing.xml: "  # noqa: E501
+                                                    "Unable to fetch sitemap from {base_url}/sitemap_news_missing.xml: "
                                                     "404 Not Found"
                                                 ).format(base_url=self.TEST_BASE_URL),
                                             ),
@@ -484,28 +460,23 @@ class TestSitemapTree(TestCase):
                 self.TEST_BASE_URL + "/sitemap_1.gz",
                 content=gzip(
                     textwrap.dedent(
-                        """
+                        f"""
                     <?xml version="1.0" encoding="UTF-8"?>
                     <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
                             xmlns:news="http://www.google.com/schemas/sitemap-news/0.9">
                         <url>
-                            <loc>{base_url}/news/foo.html</loc>
+                            <loc>{self.TEST_BASE_URL}/news/foo.html</loc>
                             <news:news>
                                 <news:publication>
-                                    <news:name>{publication_name}</news:name>
-                                    <news:language>{publication_language}</news:language>
+                                    <news:name>{self.TEST_PUBLICATION_NAME}</news:name>
+                                    <news:language>{self.TEST_PUBLICATION_LANGUAGE}</news:language>
                                 </news:publication>
-                                <news:publication_date>{publication_date}</news:publication_date>
+                                <news:publication_date>{self.TEST_DATE_STR_ISO8601}</news:publication_date>
                                 <news:title>Foo &lt;foo&gt;</news:title>    <!-- HTML entity decoding -->
                             </news:news>
                         </url>
                     </urlset>
-                """.format(  # noqa: E501
-                            base_url=self.TEST_BASE_URL,
-                            publication_name=self.TEST_PUBLICATION_NAME,
-                            publication_language=self.TEST_PUBLICATION_LANGUAGE,
-                            publication_date=self.TEST_DATE_STR_ISO8601,
-                        ),
+                """,
                     ).strip(),
                 ),
             )
@@ -516,59 +487,49 @@ class TestSitemapTree(TestCase):
                 headers={"Content-Type": "application/x-gzip"},
                 content=gzip(
                     textwrap.dedent(
-                        """
+                        f"""
                     <?xml version="1.0" encoding="UTF-8"?>
                     <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
                             xmlns:news="http://www.google.com/schemas/sitemap-news/0.9">
                         <url>
-                            <loc>{base_url}/news/bar.html</loc>
+                            <loc>{self.TEST_BASE_URL}/news/bar.html</loc>
                             <news:news>
                                 <news:publication>
-                                    <news:name>{publication_name}</news:name>
-                                    <news:language>{publication_language}</news:language>
+                                    <news:name>{self.TEST_PUBLICATION_NAME}</news:name>
+                                    <news:language>{self.TEST_PUBLICATION_LANGUAGE}</news:language>
                                 </news:publication>
-                                <news:publication_date>{publication_date}</news:publication_date>
+                                <news:publication_date>{self.TEST_DATE_STR_ISO8601}</news:publication_date>
                                 <news:title><![CDATA[Bąr]]></news:title>    <!-- CDATA and UTF-8 -->
                             </news:news>
                         </url>
                     </urlset>
-                """.format(  # noqa: E501
-                            base_url=self.TEST_BASE_URL,
-                            publication_name=self.TEST_PUBLICATION_NAME,
-                            publication_language=self.TEST_PUBLICATION_LANGUAGE,
-                            publication_date=self.TEST_DATE_STR_ISO8601,
-                        ),
+                """,
                     ).strip(),
                 ),
             )
 
-            # Sitemap which appears to be gzipped (due to extension and Content-Type) but really isn't # noqa: E501
+            # Sitemap which appears to be gzipped (due to extension and Content-Type) but really isn't
             m.get(
                 self.TEST_BASE_URL + "/sitemap_3.xml.gz",
                 headers={"Content-Type": "application/x-gzip"},
                 text=textwrap.dedent(
-                    """
+                    f"""
                     <?xml version="1.0" encoding="UTF-8"?>
                     <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
                             xmlns:news="http://www.google.com/schemas/sitemap-news/0.9">
                         <url>
-                            <loc>{base_url}/news/baz.html</loc>
+                            <loc>{self.TEST_BASE_URL}/news/baz.html</loc>
                             <news:news>
                                 <news:publication>
-                                    <news:name>{publication_name}</news:name>
-                                    <news:language>{publication_language}</news:language>
+                                    <news:name>{self.TEST_PUBLICATION_NAME}</news:name>
+                                    <news:language>{self.TEST_PUBLICATION_LANGUAGE}</news:language>
                                 </news:publication>
-                                <news:publication_date>{publication_date}</news:publication_date>
+                                <news:publication_date>{self.TEST_DATE_STR_ISO8601}</news:publication_date>
                                 <news:title><![CDATA[Bąž]]></news:title>    <!-- CDATA and UTF-8 -->
                             </news:news>
                         </url>
                     </urlset>
-                """.format(  # noqa: E501
-                        base_url=self.TEST_BASE_URL,
-                        publication_name=self.TEST_PUBLICATION_NAME,
-                        publication_language=self.TEST_PUBLICATION_LANGUAGE,
-                        publication_date=self.TEST_DATE_STR_ISO8601,
-                    ),
+                """,
                 ).strip(),
             )
 
@@ -588,23 +549,17 @@ class TestSitemapTree(TestCase):
             assert len(actual_sitemap_tree.sub_sitemaps[0].sub_sitemaps) == 3  # noqa: PLR2004
 
             # noinspection PyUnresolvedReferences
-            sitemap_1: AbstractSitemap = actual_sitemap_tree.sub_sitemaps[
-                0
-            ].sub_sitemaps[0]
+            sitemap_1: AbstractSitemap = actual_sitemap_tree.sub_sitemaps[0].sub_sitemaps[0]
             assert isinstance(sitemap_1, PagesXMLSitemap)
             assert len(sitemap_1.pages) == 1
 
             # noinspection PyUnresolvedReferences
-            sitemap_2: AbstractSitemap = actual_sitemap_tree.sub_sitemaps[
-                0
-            ].sub_sitemaps[1]
+            sitemap_2: AbstractSitemap = actual_sitemap_tree.sub_sitemaps[0].sub_sitemaps[1]
             assert isinstance(sitemap_2, PagesXMLSitemap)
             assert len(sitemap_2.pages) == 1
 
             # noinspection PyUnresolvedReferences
-            sitemap_3: AbstractSitemap = actual_sitemap_tree.sub_sitemaps[
-                0
-            ].sub_sitemaps[2]
+            sitemap_3: AbstractSitemap = actual_sitemap_tree.sub_sitemaps[0].sub_sitemaps[2]
             assert isinstance(sitemap_3, PagesXMLSitemap)
             assert len(sitemap_3.pages) == 1
 
@@ -723,37 +678,34 @@ class TestSitemapTree(TestCase):
                 self.TEST_BASE_URL + "/sitemap_rss.xml",
                 headers={"Content-Type": "application/rss+xml"},
                 text=textwrap.dedent(
-                    """
+                    f"""
                     <?xml version="1.0" encoding="UTF-8"?>
                     <rss version="2.0">
                         <channel>
                             <title>Test RSS 2.0 feed</title>
                             <description>This is a test RSS 2.0 feed.</description>
-                            <link>{base_url}</link>
-                            <pubDate>{pub_date}</pubDate>
+                            <link>{self.TEST_BASE_URL}</link>
+                            <pubDate>{self.TEST_DATE_STR_RFC2822}</pubDate>
 
                             <item>
                                 <title>Test RSS 2.0 story #1</title>
                                 <description>This is a test RSS 2.0 story #1.</description>
-                                <link>{base_url}/rss_story_1.html</link>
-                                <guid isPermaLink="true">{base_url}/rss_story_1.html</guid>
-                                <pubDate>{pub_date}</pubDate>
+                                <link>{self.TEST_BASE_URL}/rss_story_1.html</link>
+                                <guid isPermaLink="true">{self.TEST_BASE_URL}/rss_story_1.html</guid>
+                                <pubDate>{self.TEST_DATE_STR_RFC2822}</pubDate>
                             </item>
 
                             <item>
                                 <title>Test RSS 2.0 story #2</title>
                                 <description>This is a test RSS 2.0 story #2.</description>
-                                <link>{base_url}/rss_story_2.html</link>
-                                <guid isPermaLink="true">{base_url}/rss_story_2.html</guid>
-                                <pubDate>{pub_date}</pubDate>
+                                <link>{self.TEST_BASE_URL}/rss_story_2.html</link>
+                                <guid isPermaLink="true">{self.TEST_BASE_URL}/rss_story_2.html</guid>
+                                <pubDate>{self.TEST_DATE_STR_RFC2822}</pubDate>
                             </item>
 
                         </channel>
                     </rss>
-                """.format(  # noqa: E501
-                        base_url=self.TEST_BASE_URL,
-                        pub_date=self.TEST_DATE_STR_RFC2822,
-                    ),
+                """,
                 ).strip(),
             )
 
@@ -762,32 +714,29 @@ class TestSitemapTree(TestCase):
                 self.TEST_BASE_URL + "/sitemap_atom_0_3.xml",
                 headers={"Content-Type": "application/atom+xml"},
                 text=textwrap.dedent(
-                    """
+                    f"""
                     <?xml version="1.0" encoding="UTF-8"?>
                     <feed version="0.3" xmlns="http://purl.org/atom/ns#">
                         <title>Test Atom 0.3 feed</title>
-                        <link rel="alternate" type="text/html" href="{base_url}" />
-                        <modified>{pub_date}</modified>
+                        <link rel="alternate" type="text/html" href="{self.TEST_BASE_URL}" />
+                        <modified>{self.TEST_DATE_STR_ISO8601}</modified>
 
                         <entry>
                             <title>Test Atom 0.3 story #1</title>
-                            <link rel="alternate" type="text/html" href="{base_url}/atom_0_3_story_1.html" />
-                            <id>{base_url}/atom_0_3_story_1.html</id>
-                            <issued>{pub_date}</issued>
+                            <link rel="alternate" type="text/html" href="{self.TEST_BASE_URL}/atom_0_3_story_1.html" />
+                            <id>{self.TEST_BASE_URL}/atom_0_3_story_1.html</id>
+                            <issued>{self.TEST_DATE_STR_ISO8601}</issued>
                         </entry>
 
                         <entry>
                             <title>Test Atom 0.3 story #2</title>
-                            <link rel="alternate" type="text/html" href="{base_url}/atom_0_3_story_2.html" />
-                            <id>{base_url}/atom_0_3_story_2.html</id>
-                            <issued>{pub_date}</issued>
+                            <link rel="alternate" type="text/html" href="{self.TEST_BASE_URL}/atom_0_3_story_2.html" />
+                            <id>{self.TEST_BASE_URL}/atom_0_3_story_2.html</id>
+                            <issued>{self.TEST_DATE_STR_ISO8601}</issued>
                         </entry>
 
                     </feed>
-                """.format(  # noqa: E501
-                        base_url=self.TEST_BASE_URL,
-                        pub_date=self.TEST_DATE_STR_ISO8601,
-                    ),
+                """,
                 ).strip(),
             )
 
@@ -845,7 +794,7 @@ class TestSitemapTree(TestCase):
                         </entry>
 
                     </feed>
-                """.format(  # noqa: E501
+                """.format(
                         base_url=self.TEST_BASE_URL,
                         pub_date=self.TEST_DATE_STR_ISO8601,
                     ),
@@ -881,18 +830,14 @@ class TestSitemapTree(TestCase):
                                 url=f"{self.TEST_BASE_URL}/sitemap_atom_0_3.xml",
                                 pages=[
                                     SitemapPage(
-                                        url="{}/atom_0_3_story_1.html".format(
-                                            self.TEST_BASE_URL,
-                                        ),
+                                        url=f"{self.TEST_BASE_URL}/atom_0_3_story_1.html",
                                         news_story=SitemapNewsStory(
                                             title="Test Atom 0.3 story #1",
                                             publish_date=self.TEST_DATE_DATETIME,
                                         ),
                                     ),
                                     SitemapPage(
-                                        url="{}/atom_0_3_story_2.html".format(
-                                            self.TEST_BASE_URL,
-                                        ),
+                                        url=f"{self.TEST_BASE_URL}/atom_0_3_story_2.html",
                                         news_story=SitemapNewsStory(
                                             title="Test Atom 0.3 story #2",
                                             publish_date=self.TEST_DATE_DATETIME,
@@ -904,18 +849,14 @@ class TestSitemapTree(TestCase):
                                 url=f"{self.TEST_BASE_URL}/sitemap_atom_1_0.xml",
                                 pages=[
                                     SitemapPage(
-                                        url="{}/atom_1_0_story_1.html".format(
-                                            self.TEST_BASE_URL,
-                                        ),
+                                        url=f"{self.TEST_BASE_URL}/atom_1_0_story_1.html",
                                         news_story=SitemapNewsStory(
                                             title="Test Atom 1.0 story #1",
                                             publish_date=self.TEST_DATE_DATETIME,
                                         ),
                                     ),
                                     SitemapPage(
-                                        url="{}/atom_1_0_story_2.html".format(
-                                            self.TEST_BASE_URL,
-                                        ),
+                                        url=f"{self.TEST_BASE_URL}/atom_1_0_story_2.html",
                                         news_story=SitemapNewsStory(
                                             title="Test Atom 1.0 story #2",
                                             publish_date=self.TEST_DATE_DATETIME,
@@ -942,7 +883,7 @@ class TestSitemapTree(TestCase):
             assert len(list(actual_sitemap_tree.all_pages())) == 6  # noqa: PLR2004
 
     def test_sitemap_tree_for_homepage_rss_atom_empty(self: TestSitemapTree) -> None:
-        """Test sitemap_tree_for_homepage() with empty RSS 2.0 / Atom 0.3 / Atom 1.0 feeds."""  # noqa: E501
+        """Test sitemap_tree_for_homepage() with empty RSS 2.0 / Atom 0.3 / Atom 1.0 feeds."""
         with requests_mock.Mocker() as m:
             m.add_matcher(TestSitemapTree.fallback_to_404_not_found_matcher)
 
@@ -990,17 +931,14 @@ class TestSitemapTree(TestCase):
                 self.TEST_BASE_URL + "/sitemap_atom_0_3.xml",
                 headers={"Content-Type": "application/atom+xml"},
                 text=textwrap.dedent(
-                    """
+                    f"""
                     <?xml version="1.0" encoding="UTF-8"?>
                     <feed version="0.3" xmlns="http://purl.org/atom/ns#">
                         <title>Test Atom 0.3 feed</title>
-                        <link rel="alternate" type="text/html" href="{base_url}" />
-                        <modified>{pub_date}</modified>
+                        <link rel="alternate" type="text/html" href="{self.TEST_BASE_URL}" />
+                        <modified>{self.TEST_DATE_STR_ISO8601}</modified>
                     </feed>
-                """.format(
-                        base_url=self.TEST_BASE_URL,
-                        pub_date=self.TEST_DATE_STR_ISO8601,
-                    ),
+                """,
                 ).strip(),
             )
 
@@ -1009,20 +947,17 @@ class TestSitemapTree(TestCase):
                 self.TEST_BASE_URL + "/sitemap_atom_1_0.xml",
                 headers={"Content-Type": "application/atom+xml"},
                 text=textwrap.dedent(
-                    """
+                    f"""
                     <?xml version="1.0" encoding="UTF-8"?>
                     <feed xmlns="http://www.w3.org/2005/Atom">
                         <title>Test Atom 1.0 feed</title>
                         <subtitle>This is a test Atom 1.0 feed.</subtitle>
-                        <link href="{base_url}/sitemap_atom_1_0.xml" rel="self" />
-                        <link href="{base_url}" />
-                        <id>{base_url}</id>
-                        <updated>{pub_date}</updated>
+                        <link href="{self.TEST_BASE_URL}/sitemap_atom_1_0.xml" rel="self" />
+                        <link href="{self.TEST_BASE_URL}" />
+                        <id>{self.TEST_BASE_URL}</id>
+                        <updated>{self.TEST_DATE_STR_ISO8601}</updated>
                     </feed>
-                """.format(
-                        base_url=self.TEST_BASE_URL,
-                        pub_date=self.TEST_DATE_STR_ISO8601,
-                    ),
+                """,
                 ).strip(),
             )
 
@@ -1065,7 +1000,7 @@ class TestSitemapTree(TestCase):
         Some web servers are misconfigured to limit the request length to a certain number of seconds, in which time the
         server is unable to generate and compress a 50 MB sitemap XML. Google News doesn't seem to have a problem with
         this behavior, so we have to support this too.
-        """  # noqa: E501
+        """
         with requests_mock.Mocker() as m:
             m.add_matcher(TestSitemapTree.fallback_to_404_not_found_matcher)
 
@@ -1090,48 +1025,43 @@ class TestSitemapTree(TestCase):
             m.get(
                 self.TEST_BASE_URL + "/sitemap.xml",
                 text=textwrap.dedent(
-                    """
+                    f"""
                     <?xml version="1.0" encoding="UTF-8"?>
                     <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
                             xmlns:news="http://www.google.com/schemas/sitemap-news/0.9">
                         <url>
-                            <loc>{base_url}/news/first.html</loc>
+                            <loc>{self.TEST_BASE_URL}/news/first.html</loc>
                             <news:news>
                                 <news:publication>
-                                    <news:name>{publication_name}</news:name>
-                                    <news:language>{publication_language}</news:language>
+                                    <news:name>{self.TEST_PUBLICATION_NAME}</news:name>
+                                    <news:language>{self.TEST_PUBLICATION_LANGUAGE}</news:language>
                                 </news:publication>
-                                <news:publication_date>{publication_date}</news:publication_date>
+                                <news:publication_date>{self.TEST_DATE_STR_ISO8601}</news:publication_date>
                                 <news:title>First story</news:title>
                             </news:news>
                         </url>
                         <url>
-                            <loc>{base_url}/news/second.html</loc>
+                            <loc>{self.TEST_BASE_URL}/news/second.html</loc>
                             <news:news>
                                 <news:publication>
-                                    <news:name>{publication_name}</news:name>
-                                    <news:language>{publication_language}</news:language>
+                                    <news:name>{self.TEST_PUBLICATION_NAME}</news:name>
+                                    <news:language>{self.TEST_PUBLICATION_LANGUAGE}</news:language>
                                 </news:publication>
-                                <news:publication_date>{publication_date}</news:publication_date>
+                                <news:publication_date>{self.TEST_DATE_STR_ISO8601}</news:publication_date>
                                 <news:title>Second story</news:title>
                             </news:news>
                         </url>
 
                         <!-- The following story shouldn't get added as the XML ends prematurely -->
                         <url>
-                            <loc>{base_url}/news/third.html</loc>
+                            <loc>{self.TEST_BASE_URL}/news/third.html</loc>
                             <news:news>
                                 <news:publication>
-                                    <news:name>{publication_name}</news:name>
-                                    <news:language>{publication_language}</news:language>
+                                    <news:name>{self.TEST_PUBLICATION_NAME}</news:name>
+                                    <news:language>{self.TEST_PUBLICATION_LANGUAGE}</news:language>
                                 </news:publication>
                                 <news:publicat
-                """.format(  # noqa: E501
-                        base_url=self.TEST_BASE_URL,
-                        publication_name=self.TEST_PUBLICATION_NAME,
-                        publication_language=self.TEST_PUBLICATION_LANGUAGE,
-                        publication_date=self.TEST_DATE_STR_ISO8601,
-                    ),
+                """,
                 ).strip(),
             )
 
@@ -1150,9 +1080,7 @@ class TestSitemapTree(TestCase):
             assert len(actual_sitemap_tree.sub_sitemaps[0].sub_sitemaps) == 1
 
             # noinspection PyUnresolvedReferences
-            sitemap: AbstractSitemap = actual_sitemap_tree.sub_sitemaps[0].sub_sitemaps[
-                0
-            ]
+            sitemap: AbstractSitemap = actual_sitemap_tree.sub_sitemaps[0].sub_sitemaps[0]
             assert isinstance(sitemap, PagesXMLSitemap)
             assert len(sitemap.pages) == 2  # noqa: PLR2004
 
@@ -1196,7 +1124,7 @@ class TestSitemapTree(TestCase):
     def test_sitemap_tree_for_homepage_unpublished_sitemap(
         self: TestSitemapTree,
     ) -> None:
-        """Test sitemap_tree_for_homepage() with some sitemaps not published in robots.txt."""  # noqa: E501
+        """Test sitemap_tree_for_homepage() with some sitemaps not published in robots.txt."""
         with requests_mock.Mocker() as m:
             m.add_matcher(TestSitemapTree.fallback_to_404_not_found_matcher)
 
@@ -1344,9 +1272,7 @@ class TestSitemapTree(TestCase):
                 sub_sitemaps=[
                     InvalidSitemap(
                         url=f"{self.TEST_BASE_URL}/robots.txt",
-                        reason=(
-                            "Unable to fetch sitemap from {base_url}/robots.txt: 404 Not Found"  # noqa: E501
-                        ).format(base_url=self.TEST_BASE_URL),
+                        reason=(f"Unable to fetch sitemap from {self.TEST_BASE_URL}/robots.txt: 404 Not Found"),
                     ),
                 ],
             )
@@ -1358,7 +1284,7 @@ class TestSitemapTree(TestCase):
             assert expected_sitemap_tree == actual_sitemap_tree
 
     def test_sitemap_tree_for_homepage_huge_sitemap(self: TestSitemapTree) -> None:
-        """Test sitemap_tree_for_homepage() with a huge sitemap (mostly for profiling)."""  # noqa: E501
+        """Test sitemap_tree_for_homepage() with a huge sitemap (mostly for profiling)."""
         page_count = 1000
 
         sitemap_xml = """<?xml version="1.0" encoding="UTF-8"?>
@@ -1367,9 +1293,9 @@ class TestSitemapTree(TestCase):
                     xmlns:xhtml="http://www.w3.org/1999/xhtml">
         """
         for x in range(page_count):
-            sitemap_xml += """
+            sitemap_xml += f"""
                 <url>
-                    <loc>{base_url}/news/page_{x}.html</loc>
+                    <loc>{self.TEST_BASE_URL}/news/page_{x}.html</loc>
 
                     <!-- Element present but empty -->
                     <lastmod />
@@ -1377,24 +1303,18 @@ class TestSitemapTree(TestCase):
                     <!-- Some other XML namespace -->
                     <xhtml:link rel="alternate"
                                 media="only screen and (max-width: 640px)"
-                                href="{base_url}/news/page_{x}.html?mobile=1" />
+                                href="{self.TEST_BASE_URL}/news/page_{x}.html?mobile=1" />
 
                     <news:news>
                         <news:publication>
-                            <news:name>{publication_name}</news:name>
-                            <news:language>{publication_language}</news:language>
+                            <news:name>{self.TEST_PUBLICATION_NAME}</news:name>
+                            <news:language>{self.TEST_PUBLICATION_LANGUAGE}</news:language>
                         </news:publication>
-                        <news:publication_date>{publication_date}</news:publication_date>
+                        <news:publication_date>{self.TEST_DATE_STR_ISO8601}</news:publication_date>
                         <news:title>Foo &lt;foo&gt;</news:title>    <!-- HTML entity decoding -->
                     </news:news>
                 </url>
-            """.format(  # noqa: E501
-                x=x,
-                base_url=self.TEST_BASE_URL,
-                publication_name=self.TEST_PUBLICATION_NAME,
-                publication_language=self.TEST_PUBLICATION_LANGUAGE,
-                publication_date=self.TEST_DATE_STR_ISO8601,
-            )
+            """
 
         sitemap_xml += "</urlset>"
 
@@ -1445,7 +1365,7 @@ class TestSitemapTree(TestCase):
 
             robots_txt_body = ""
             robots_txt_body += "User-agent: *\n"
-            # Extra space before "Sitemap:", no space after "Sitemap:", and extra space after sitemap URL # noqa: E501
+            # Extra space before "Sitemap:", no space after "Sitemap:", and extra space after sitemap URL
             robots_txt_body += f" Sitemap:{self.TEST_BASE_URL}/sitemap.xml    "
 
             m.get(
@@ -1457,28 +1377,23 @@ class TestSitemapTree(TestCase):
             m.get(
                 self.TEST_BASE_URL + "/sitemap.xml",
                 text=textwrap.dedent(
-                    """
+                    f"""
                     <?xml version="1.0" encoding="UTF-8"?>
                     <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
                             xmlns:news="http://www.google.com/schemas/sitemap-news/0.9">
                         <url>
-                            <loc>{base_url}/news/first.html</loc>
+                            <loc>{self.TEST_BASE_URL}/news/first.html</loc>
                             <news:news>
                                 <news:publication>
-                                    <news:name>{publication_name}</news:name>
-                                    <news:language>{publication_language}</news:language>
+                                    <news:name>{self.TEST_PUBLICATION_NAME}</news:name>
+                                    <news:language>{self.TEST_PUBLICATION_LANGUAGE}</news:language>
                                 </news:publication>
-                                <news:publication_date>{publication_date}</news:publication_date>
+                                <news:publication_date>{self.TEST_DATE_STR_ISO8601}</news:publication_date>
                                 <news:title>First story</news:title>
                             </news:news>
                         </url>
                     </urlset>
-                """.format(
-                        base_url=self.TEST_BASE_URL,
-                        publication_name=self.TEST_PUBLICATION_NAME,
-                        publication_language=self.TEST_PUBLICATION_LANGUAGE,
-                        publication_date=self.TEST_DATE_STR_ISO8601,
-                    ),
+                """,
                 ).strip(),
             )
 
@@ -1488,7 +1403,7 @@ class TestSitemapTree(TestCase):
             assert len(list(actual_sitemap_tree.all_pages())) == 1
 
     def test_sitemap_tree_for_homepage_utf8_bom(self: TestSitemapTree) -> None:
-        """Test sitemap_tree_for_homepage() with UTF-8 BOM in both robots.txt and sitemap."""  # noqa: E501
+        """Test sitemap_tree_for_homepage() with UTF-8 BOM in both robots.txt and sitemap."""
         robots_txt_body: str = textwrap.dedent(
             f"""
             User-agent: *
@@ -1499,28 +1414,23 @@ class TestSitemapTree(TestCase):
         ).strip()
 
         sitemap_xml_body: str = textwrap.dedent(
-            """
+            f"""
             <?xml version="1.0" encoding="UTF-8"?>
             <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
                     xmlns:news="http://www.google.com/schemas/sitemap-news/0.9">
                 <url>
-                    <loc>{base_url}/news/first.html</loc>
+                    <loc>{self.TEST_BASE_URL}/news/first.html</loc>
                     <news:news>
                         <news:publication>
-                            <news:name>{publication_name}</news:name>
-                            <news:language>{publication_language}</news:language>
+                            <news:name>{self.TEST_PUBLICATION_NAME}</news:name>
+                            <news:language>{self.TEST_PUBLICATION_LANGUAGE}</news:language>
                         </news:publication>
-                        <news:publication_date>{publication_date}</news:publication_date>
+                        <news:publication_date>{self.TEST_DATE_STR_ISO8601}</news:publication_date>
                         <news:title>First story</news:title>
                     </news:news>
                 </url>
             </urlset>
-        """.format(
-                base_url=self.TEST_BASE_URL,
-                publication_name=self.TEST_PUBLICATION_NAME,
-                publication_language=self.TEST_PUBLICATION_LANGUAGE,
-                publication_date=self.TEST_DATE_STR_ISO8601,
-            ),
+        """,
         ).strip()
 
         robots_txt_body_encoded: bytes = robots_txt_body.encode("utf-8-sig")
