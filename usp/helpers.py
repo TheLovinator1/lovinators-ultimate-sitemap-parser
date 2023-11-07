@@ -6,7 +6,6 @@ from __future__ import annotations
 import gzip as gzip_lib
 import html
 import re
-import time
 from typing import TYPE_CHECKING
 from urllib.parse import ParseResult, unquote_plus, urlparse, urlunparse
 
@@ -17,15 +16,11 @@ from .exceptions import (
     GunzipExceptionError,
     SitemapExceptionError,
 )
-from .web_client.abstract_client import (
-    AbstractWebClient,
-    AbstractWebClientResponse,
-    AbstractWebClientSuccessResponse,
-    WebClientErrorResponse,
-)
 
 if TYPE_CHECKING:
     import datetime
+
+    from httpx import Response
 
 # Regular expression to match HTTP(s) URLs.
 __URL_REGEX: re.Pattern[str] = re.compile(r"^https?://[^\s/$.?#].[^\s]*$", re.IGNORECASE)
@@ -115,51 +110,7 @@ def parse_rfc2822_date(date_string: str) -> datetime.datetime:
     return parse_iso8601_date(date_string)
 
 
-def get_url_retry_on_client_errors(
-    url: str,
-    web_client: AbstractWebClient,
-    retry_count: int = 5,
-    sleep_between_retries: int = 1,
-) -> AbstractWebClientResponse:
-    """Fetch URL, retry on retryable errors.
-
-    :param url: URL to fetch.
-    :param web_client: Web client object to use for fetching.
-    :param retry_count: How many times to retry fetching the same URL.
-    :param sleep_between_retries: How long to sleep between retries, in seconds.
-    :return: Web client response object.
-    """
-    # if retry_count > 0:
-    #    msg = "Retry count must be positive."
-    #    raise ValueError(msg)
-
-    response = AbstractWebClientResponse()
-    for _retry in range(retry_count):
-        log.info(f"Fetching URL {url}...")
-        response: AbstractWebClientResponse = web_client.get(url)
-
-        if isinstance(response, WebClientErrorResponse):
-            log.warning(f"Request for URL {url} failed: {response.message()}")
-
-            if response.retryable():
-                log.info(f"Retrying URL {url} in {sleep_between_retries} seconds...")
-                time.sleep(sleep_between_retries)
-
-            else:
-                log.info(f"Not retrying for URL {url}")
-                return response
-
-        else:
-            return response
-
-    log.info(f"Giving up on URL {url}")
-    return response
-
-
-def __response_is_gzipped_data(
-    url: str,
-    response: AbstractWebClientSuccessResponse,
-) -> bool:
+def __response_is_gzipped_data(url: str, response: Response) -> bool:
     """Return True if Response looks like it's gzipped.
 
     :param url: URL the response was fetched from.
@@ -168,7 +119,7 @@ def __response_is_gzipped_data(
     """
     uri: ParseResult = urlparse(url)
     url_path: str = unquote_plus(uri.path)
-    content_type: str = response.header("content-type") or ""
+    content_type: str = response.headers.get("Content-Type", "")
 
     return bool(url_path.lower().endswith(".gz") or "gzip" in content_type.lower())
 
@@ -207,17 +158,14 @@ def gunzip(data: bytes) -> bytes:
     return gunzipped_data
 
 
-def ungzipped_response_content(
-    url: str,
-    response: AbstractWebClientSuccessResponse,
-) -> str:
+def ungzipped_response_content(url: str, response: Response) -> str:
     """Return HTTP response's decoded content, gunzip it if necessary.
 
     :param url: URL the response was fetched from.
     :param response: Response object.
     :return: Decoded and (if necessary) gunzipped response string.
     """
-    data = response.raw_data()
+    data = response.content
 
     if __response_is_gzipped_data(url=url, response=response):
         try:

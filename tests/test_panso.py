@@ -9,7 +9,7 @@ if TYPE_CHECKING:
 def test_sitemap_tree_for_homepage_on_panso() -> None:
     """Test sitemap_tree_for_homepage() on panso.se."""
     result: AbstractSitemap = sitemap_tree_for_homepage("https://panso.se/")
-    sub_sitemaps = result.sub_sitemaps  # type: ignore  # noqa: PGH003
+    sub_sitemaps = result.sub_sitemaps
     assert len(sub_sitemaps) == 1
     assert sub_sitemaps[0].url == "https://panso.se/robots.txt"
 

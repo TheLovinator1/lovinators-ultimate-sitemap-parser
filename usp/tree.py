@@ -3,7 +3,6 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
 from urllib.parse import ParseResult, urljoin, urlparse
 
 from loguru import logger as log
@@ -17,9 +16,6 @@ from .objects.sitemap import (
     IndexWebsiteSitemap,
     InvalidSitemap,
 )
-
-if TYPE_CHECKING:
-    from .web_client.abstract_client import AbstractWebClient
 
 # Paths which are not exposed in robots.txt but might still contain a sitemap.
 _UNPUBLISHED_SITEMAP_PATHS: set[str] = {
@@ -40,10 +36,7 @@ _UNPUBLISHED_SITEMAP_PATHS: set[str] = {
 }
 
 
-def sitemap_tree_for_homepage(
-    homepage_url: str,
-    web_client: AbstractWebClient | None = None,
-) -> AbstractSitemap:
+def sitemap_tree_for_homepage(homepage_url: str) -> AbstractSitemap:
     """Using a homepage URL, fetch the tree of sitemaps and pages listed in them.
 
     Args:
@@ -70,11 +63,7 @@ def sitemap_tree_for_homepage(
 
     sitemaps = []
 
-    robots_txt_fetcher = SitemapFetcher(
-        url=robots_txt_url,
-        web_client=web_client,
-        recursion_level=0,
-    )
+    robots_txt_fetcher = SitemapFetcher(url=robots_txt_url, recursion_level=0)
     robots_txt_sitemap: AbstractSitemap = robots_txt_fetcher.sitemap()
     sitemaps.append(robots_txt_sitemap)
 
@@ -88,11 +77,7 @@ def sitemap_tree_for_homepage(
 
         # Don't refetch URLs already found in robots.txt
         if unpublished_sitemap_url not in sitemap_urls_found_in_robots_txt:
-            unpublished_sitemap_fetcher = SitemapFetcher(
-                url=unpublished_sitemap_url,
-                web_client=web_client,
-                recursion_level=0,
-            )
+            unpublished_sitemap_fetcher = SitemapFetcher(url=unpublished_sitemap_url, recursion_level=0)
             unpublished_sitemap: AbstractSitemap = unpublished_sitemap_fetcher.sitemap()
 
             # Skip the ones that weren't found

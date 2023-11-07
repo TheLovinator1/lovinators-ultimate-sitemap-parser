@@ -8,11 +8,14 @@ from collections import OrderedDict
 from decimal import Decimal
 from typing import TYPE_CHECKING, Any
 
+import httpx
+from httpx import Client
 from loguru import logger as log
+
+from usp.http_client import get_http_client
 
 from .exceptions import SitemapExceptionError, SitemapXMLParsingExceptionError
 from .helpers import (
-    get_url_retry_on_client_errors,
     html_unescape_strip,
     is_http_url,
     parse_iso8601_date,
@@ -35,13 +38,6 @@ from .objects.sitemap import (
     PagesTextSitemap,
     PagesXMLSitemap,
 )
-from .web_client.abstract_client import (
-    AbstractWebClient,
-    AbstractWebClientResponse,
-    AbstractWebClientSuccessResponse,
-    WebClientErrorResponse,
-)
-from .web_client.requests_client import RequestsWebClient
 
 if TYPE_CHECKING:
     from pyexpat import XMLParserType
@@ -49,11 +45,6 @@ if TYPE_CHECKING:
 
 class SitemapFetcher:
     """robots.txt / XML / plain text sitemap fetcher."""
-
-    __MAX_SITEMAP_SIZE = 100 * 1024 * 1024
-    """Max. uncompressed sitemap size.
-
-    Spec says it might be up to 50 MB but let's go for the full 100 MB here."""
 
     __MAX_RECURSION_LEVEL = 10
     """Max. recursion level in iterating over sub-sitemaps."""
@@ -68,7 +59,6 @@ class SitemapFetcher:
         self: SitemapFetcher,
         url: str,
         recursion_level: int,
-        web_client: AbstractWebClient | None = None,
     ) -> None:
         """Constructor.
 
@@ -90,13 +80,8 @@ class SitemapFetcher:
             msg: str = f"URL {url} is not a HTTP(s) URL."
             raise SitemapExceptionError(msg)
 
-        if not web_client:
-            web_client = RequestsWebClient()
-
-        web_client.set_max_response_data_length(self.__MAX_SITEMAP_SIZE)
-
         self._url: str = url
-        self._web_client: RequestsWebClient | AbstractWebClient = web_client
+        self._web_client: Client = get_http_client()
         self._recursion_level: int = recursion_level
 
     def sitemap(self: SitemapFetcher) -> AbstractSitemap:
@@ -109,20 +94,13 @@ class SitemapFetcher:
             Sitemap object.
         """
         log.info(f"Fetching level {self._recursion_level} sitemap from {self._url}...")
-        response: AbstractWebClientResponse = get_url_retry_on_client_errors(
-            url=self._url,
-            web_client=self._web_client,
-        )
+        response: httpx.Response = httpx.get(self._url)
 
-        if isinstance(response, WebClientErrorResponse):
+        if response.is_error:
             return InvalidSitemap(
                 url=self._url,
-                reason=f"Unable to fetch sitemap from {self._url}: {response.message()}",
+                reason=f"Unable to fetch sitemap from {self._url}: {response.status_code} {response.reason_phrase}",
             )
-
-        if isinstance(response, AbstractWebClientSuccessResponse):
-            msg = "AbstractWebClientSuccessResponse"
-            log.error(msg)
 
         response_content: str = ungzipped_response_content(
             url=self._url,
@@ -136,7 +114,6 @@ class SitemapFetcher:
                 url=self._url,
                 content=response_content,
                 recursion_level=self._recursion_level,
-                web_client=self._web_client,
             )
 
         else:  # noqa: PLR5501
@@ -146,14 +123,12 @@ class SitemapFetcher:
                     url=self._url,
                     content=response_content,
                     recursion_level=self._recursion_level,
-                    web_client=self._web_client,
                 )
             else:
                 parser = PlainTextSitemapParser(
                     url=self._url,
                     content=response_content,
                     recursion_level=self._recursion_level,
-                    web_client=self._web_client,
                 )
 
         log.info(f"Parsing sitemap from URL {self._url}...")
@@ -163,20 +138,9 @@ class SitemapFetcher:
 class AbstractSitemapParser(metaclass=abc.ABCMeta):
     """Abstract robots.txt / XML / plain text sitemap parser."""
 
-    __slots__: list[str] = [
-        "_url",
-        "_content",
-        "_web_client",
-        "_recursion_level",
-    ]
+    __slots__: list[str] = ["_url", "_content", "_web_client", "_recursion_level"]
 
-    def __init__(
-        self: AbstractSitemapParser,
-        url: str,
-        content: str,
-        recursion_level: int,
-        web_client: AbstractWebClient,
-    ) -> None:
+    def __init__(self: AbstractSitemapParser, url: str, content: str, recursion_level: int) -> None:
         """Constructor.
 
         Args:
@@ -189,7 +153,6 @@ class AbstractSitemapParser(metaclass=abc.ABCMeta):
         self._url: str = url
         self._content: str = content
         self._recursion_level: int = recursion_level
-        self._web_client: AbstractWebClient = web_client
 
     @abc.abstractmethod
     def sitemap(self: AbstractSitemapParser) -> AbstractSitemap:
@@ -216,7 +179,6 @@ class IndexRobotsTxtSitemapParser(AbstractSitemapParser):
         url: str,
         content: str,
         recursion_level: int,
-        web_client: AbstractWebClient,
     ) -> None:
         """Constructor.
 
@@ -230,12 +192,7 @@ class IndexRobotsTxtSitemapParser(AbstractSitemapParser):
         Raises:
             SitemapException: If the URL does not look like a robots.txt URL.
         """
-        super().__init__(
-            url=url,
-            content=content,
-            recursion_level=recursion_level,
-            web_client=web_client,
-        )
+        super().__init__(url=url, content=content, recursion_level=recursion_level)
 
         if not self._url.endswith("/robots.txt"):
             msg: str = f"URL does not look like robots.txt URL: {self._url}"
@@ -269,11 +226,7 @@ class IndexRobotsTxtSitemapParser(AbstractSitemapParser):
         sub_sitemaps = []
 
         for sitemap_url in sitemap_urls:
-            fetcher = SitemapFetcher(
-                url=sitemap_url,
-                recursion_level=self._recursion_level,
-                web_client=self._web_client,
-            )
+            fetcher = SitemapFetcher(url=sitemap_url, recursion_level=self._recursion_level)
             fetched_sitemap: AbstractSitemap = fetcher.sitemap()
             sub_sitemaps.append(fetched_sitemap)
 
@@ -301,9 +254,7 @@ class PlainTextSitemapParser(AbstractSitemapParser):
             if is_http_url(stripped_story_url):
                 story_urls[stripped_story_url] = True
             else:
-                log.warning(
-                    f"Story URL {stripped_story_url} doesn't look like an URL, skipping",
-                )
+                log.warning(f"Story URL {stripped_story_url} doesn't look like an URL, skipping")
 
         pages = []
         for page_url in story_urls:
@@ -322,13 +273,7 @@ class XMLSitemapParser(AbstractSitemapParser):
         "_concrete_parser",
     ]
 
-    def __init__(
-        self: XMLSitemapParser,
-        url: str,
-        content: str,
-        recursion_level: int,
-        web_client: AbstractWebClient,
-    ) -> None:
+    def __init__(self: XMLSitemapParser, url: str, content: str, recursion_level: int) -> None:
         """Constructor.
 
         Args:
@@ -338,12 +283,7 @@ class XMLSitemapParser(AbstractSitemapParser):
             recursion_level: Recursion level in iterating over sub-sitemaps.
             web_client: Web client implementation to use for fetching sitemaps.
         """
-        super().__init__(
-            url=url,
-            content=content,
-            recursion_level=recursion_level,
-            web_client=web_client,
-        )
+        super().__init__(url=url, content=content, recursion_level=recursion_level)
 
         # Will be initialized when the type of sitemap is known
         self._concrete_parser = None
@@ -440,7 +380,6 @@ class XMLSitemapParser(AbstractSitemapParser):
             elif name == "sitemap:sitemapindex":
                 self._concrete_parser = IndexXMLSitemapParser(
                     url=self._url,
-                    web_client=self._web_client,
                     recursion_level=self._recursion_level,
                 )
 
@@ -565,7 +504,6 @@ class IndexXMLSitemapParser(AbstractXMLSitemapParser):
     def __init__(
         self: IndexXMLSitemapParser,
         url: str,
-        web_client: AbstractWebClient,
         recursion_level: int,
     ) -> None:
         """Constructor.
@@ -578,7 +516,6 @@ class IndexXMLSitemapParser(AbstractXMLSitemapParser):
         """
         super().__init__(url=url)
 
-        self._web_client: AbstractWebClient = web_client
         self._recursion_level: int = recursion_level
         self._sub_sitemap_urls: list[str] = []
 
@@ -615,7 +552,6 @@ class IndexXMLSitemapParser(AbstractXMLSitemapParser):
                 fetcher = SitemapFetcher(
                     url=sub_sitemap_url,
                     recursion_level=self._recursion_level + 1,
-                    web_client=self._web_client,
                 )
                 fetched_sitemap: AbstractSitemap = fetcher.sitemap()
             except Exception as ex:  # noqa: BLE001
